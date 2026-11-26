@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>HY300 Remote — Controle Remoto Universal (IP &amp; Bluetooth)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(circle at 20% 0%, #1e293b 0%, #0b0f19 55%, #06080f 100%);
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, textarea, code, pre, select {
+      user-select: text;
+    }
+    .remote-shell {
+      background: linear-gradient(165deg, #272c38 0%, #181c26 48%, #11141c 100%);
+      box-shadow:
+        0 24px 55px rgba(0, 0, 0, 0.65),
+        inset 0 1px 1px rgba(255, 255, 255, 0.14),
+        inset 0 -2px 6px rgba(0, 0, 0, 0.6);
+    }
+    .remote-btn {
+      background: linear-gradient(180deg, #323847 0%, #232835 100%);
+      box-shadow:
+        0 4px 10px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    }
+    .remote-btn:hover {
+      background: linear-gradient(180deg, #3b4254 0%, #2a3040 100%);
+    }
+    .remote-btn:active,
+    .remote-btn.is-pressed {
+      transform: translateY(2px) scale(0.96);
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.55),
+        inset 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    .remote-btn-power {
+      background: linear-gradient(180deg, #ef4444 0%, #b91c1c 100%);
+      box-shadow:
+        0 4px 14px rgba(239, 68, 68, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    }
+    .remote-btn-power:hover {
+      background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
+    }
+    .dpad-ring {
+      background: radial-gradient(circle at 50% 35%, #343b4c 0%, #1f2430 70%, #171b24 100%);
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.55),
+        inset 0 1px 2px rgba(255, 255, 255, 0.14),
+        inset 0 -3px 8px rgba(0, 0, 0, 0.65);
+    }
+    .dpad-ok {
+      background: linear-gradient(180deg, #4f46e5 0%, #3730a3 100%);
+      box-shadow:
+        0 6px 16px rgba(79, 70, 229, 0.45),
+        inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+    .dpad-ok:hover {
+      background: linear-gradient(180deg, #6366f1 0%, #4338ca 100%);
+    }
+    .dpad-ok:active,
+    .dpad-ok.is-pressed {
+      transform: scale(0.94);
+    }
+    .projector-screen {
+      background: radial-gradient(circle at 50% 10%, #1d2b4f 0%, #0f172a 60%, #090d16 100%);
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.65),
+        0 0 0 1px rgba(148, 163, 184, 0.18);
+    }
+    .touchpad-surface {
+      background:
+        radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 70%),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 22px),
+        repeating-linear-gradient(90deg, rgba(255,255,255,0.025) 0 1px, transparent 1px 22px),
+        #131722;
+      touch-action: none;
+    }
+    .led-pulse {
+      animation: ledPulse 0.35s ease-out;
+    }
+    @keyframes ledPulse {
+      0% { transform: scale(1.7); opacity: 1; box-shadow: 0 0 14px #38bdf8; }
+      100% { transform: scale(1); opacity: 0.75; box-shadow: 0 0 4px #38bdf8; }
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.45);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 antialiased overflow-x-hidden">
+
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+    <div class="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-3">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-400">
+          <i data-lucide="projector" class="h-5 w-5"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 class="truncate text-sm sm:text-base font-semibold tracking-tight text-white">HY300 Remote</h1>
+          <div class="flex items-center gap-1.5 text-xs text-slate-400">
+            <span id="headerStatusDot" class="inline-block h-2 w-2 rounded-full bg-emerald-400"></span>
+            <span id="headerProfileLabel" class="truncate">HY300 Sala · IP Direto</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button id="btnToggleSound" type="button" title="Som dos botões"
+          class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-700/80 bg-slate-900/90 text-slate-300 hover:bg-slate-800 hover:text-white transition">
+          <i id="iconSound" data-lucide="volume-2" class="h-4 w-4"></i>
+        </button>
+        <button id="btnQuickBt" type="button" title="Conectar via Bluetooth"
+          class="flex items-center gap-1.5 rounded-lg border border-sky-500/40 bg-sky-500/15 px-2.5 py-2 text-xs font-medium text-sky-300 hover:bg-sky-500/25 transition">
+          <i data-lucide="bluetooth" class="h-4 w-4"></i>
+          <span class="hidden sm:inline">Bluetooth</span>
+        </button>
+        <button id="btnOpenConnect" type="button"
+          class="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-2 text-xs sm:text-sm font-medium text-white hover:bg-indigo-500 transition shadow-sm">
+          <i data-lucide="wifi" class="h-4 w-4"></i>
+          <span>Conectar IP / BT</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="mx-auto max-w-6xl px-4 py-5 sm:py-7">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Left Column: Universal Remote Control -->
+      <section class="lg:col-span-5 flex flex-col items-center">
+
+        <!-- Mode Tabs (Remote / Touchpad / Keyboard / Apps) -->
+        <div class="mb-4 grid w-full max-w-[360px] grid-cols-4 gap-1 rounded-xl border border-slate-800 bg-slate-900/85 p-1">
+          <button type="button" data-tab="remote" class="mode-tab flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-[11px] font-medium transition bg-indigo-600 text-white">
+            <i data-lucide="gamepad-2" class="h-4 w-4"></i>
+            <span>Controle</span>
+          </button>
+          <button type="button" data-tab="touchpad" class="mode-tab flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-[11px] font-medium transition text-slate-400 hover:text-white">
+            <i data-lucide="mouse-pointer-2" class="h-4 w-4"></i>
+            <span>Mouse</span>
+          </button>
+          <button type="button" data-tab="keyboard" class="mode-tab flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-[11px] font-medium transition text-slate-400 hover:text-white">
+            <i data-lucide="keyboard" class="h-4 w-4"></i>
+            <span>Teclado</span>
+          </button>
+          <button type="button" data-tab="apps" class="mode-tab flex flex-col items-center justify-center gap-1 rounded-lg py-2 text-[11px] font-medium transition text-slate-400 hover:text-white">
+            <i data-lucide="layout-grid" class="h-4 w-4"></i>
+            <span>Apps</span>
+          </button>
+        </div>
+
+        <!-- Remote Shell Body -->
+        <div class="remote-shell w-full max-w-[360px] rounded-[2rem] border border-slate-700/60 p-5 relative">
+
+          <!-- Top Signal LED & Model Badge -->
+          <div class="mb-4 flex items-center justify-between px-1">
+            <div class="flex items-center gap-2">
+              <span id="signalLed" class="h-2.5 w-2.5 rounded-full bg-sky-400/75 transition"></span>
+              <span class="text-[11px] font-medium tracking-wider uppercase text-slate-400">HY300 / Pro</span>
+            </div>
+            <span id="remoteModeBadge" class="rounded-full border border-slate-700 bg-slate-800/90 px-2.5 py-0.5 text-[10px] font-medium text-slate-300">
+              D-Pad Ativo
+            </span>
+          </div>
+
+          <!-- Always-Visible Top Row: Power, Source, Mute -->
+          <div class="mb-5 grid grid-cols-3 gap-3">
+            <button type="button" data-cmd="POWER" aria-label="Ligar ou Desligar"
+              class="remote-btn remote-btn-power flex h-12 items-center justify-center gap-1.5 rounded-2xl text-white font-semibold text-xs">
+              <i data-lucide="power" class="h-4 w-4"></i>
+              <span>Power</span>
+            </button>
+            <button type="button" data-cmd="SOURCE" aria-label="Fonte HDMI"
+              class="remote-btn flex h-12 items-center justify-center gap-1.5 rounded-2xl text-slate-200 font-medium text-xs">
+              <i data-lucide="monitor-play" class="h-4 w-4 text-sky-400"></i>
+              <span>HDMI</span>
+            </button>
+            <button type="button" data-cmd="MUTE" aria-label="Mudo"
+              class="remote-btn flex h-12 items-center justify-center gap-1.5 rounded-2xl text-slate-200 font-medium text-xs">
+              <i id="remoteMuteIcon" data-lucide="volume-x" class="h-4 w-4 text-amber-400"></i>
+              <span>Mudo</span>
+            </button>
+          </div>
+
+          <!-- TAB 1: AUTHENTIC HY300 REMOTE -->
+          <div id="panel-remote" class="tab-panel space-y-5">
+            <!-- HY300 Special Row: Miracast, Mouse Toggle, AirPin -->
+            <div class="grid grid-cols-3 gap-2.5">
+              <button type="button" data-cmd="MIRACAST"
+                class="remote-btn flex flex-col items-center justify-center gap-1 rounded-xl py-2.5 text-[11px] font-medium text-slate-200">
+                <i data-lucide="cast" class="h-4 w-4 text-emerald-400"></i>
+                <span>Miracast</span>
+              </button>
+              <button type="button" data-cmd="MOUSE_TOGGLE" id="btnMouseToggle"
+                class="remote-btn flex flex-col items-center justify-center gap-1 rounded-xl py-2.5 text-[11px] font-medium text-slate-200">
+                <i data-lucide="mouse-pointer" class="h-4 w-4 text-indigo-400"></i>
+                <span>Modo Mouse</span>
+              </button>
+              <button type="button" data-cmd="AIRPIN"
+                class="remote-btn flex flex-col items-center justify-center gap-1 rounded-xl py-2.5 text-[11px] font-medium text-slate-200">
+                <i data-lucide="airplay" class="h-4 w-4 text-sky-400"></i>
+                <span>AirPin</span>
+              </button>
+            </div>
+
+            <!-- Circular D-Pad + OK -->
+            <div class="flex justify-center py-1">
+              <div class="dpad-ring relative h-52 w-52 rounded-full border border-slate-700/70">
+                <button type="button" data-cmd="UP" aria-label="Cima"
+                  class="absolute top-2 left-1/2 -translate-x-1/2 flex h-12 w-16 items-center justify-center rounded-t-full text-slate-200 hover:text-white active:scale-90 transition">
+                  <i data-lucide="chevron-up" class="h-6 w-6"></i>
+                </button>
+                <button type="button" data-cmd="DOWN" aria-label="Baixo"
+                  class="absolute bottom-2 left-1/2 -translate-x-1/2 flex h-12 w-16 items-center justify-center rounded-b-full text-slate-200 hover:text-white active:scale-90 transition">
+                  <i data-lucide="chevron-down" class="h-6 w-6"></i>
+                </button>
+                <button type="button" data-cmd="LEFT" aria-label="Esquerda"
+                  class="absolute left-2 top-1/2 -translate-y-1/2 flex h-16 w-12 items-center justify-center rounded-l-full text-slate-200 hover:text-white active:scale-90 transition">
+                  <i data-lucide="chevron-left" class="h-6 w-6"></i>
+                </button>
+                <button type="button" data-cmd="RIGHT" aria-label="Direita"
+                  class="absolute right-2 top-1/2 -translate-y-1/2 flex h-16 w-12 items-center justify-center rounded-r-full text-slate-200 hover:text-white active:scale-90 transition">
+                  <i data-lucide="chevron-right" class="h-6 w-6"></i>
+                </button>
+                <button type="button" data-cmd="OK" aria-label="Confirmar OK"
+                  class="dpad-ok absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-20 w-20 items-center justify-center rounded-full text-sm font-bold tracking-wide text-white transition">
+                  OK
+                </button>
+              </div>
+            </div>
+
+            <!-- Navigation Row: Return, Home, Menu -->
+            <div class="grid grid-cols-3 gap-3">
+              <button type="button" data-cmd="BACK" aria-label="Voltar"
+                class="remote-btn flex h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-slate-200">
+                <i data-lucide="undo-2" class="h-4 w-4"></i>
+                <span class="text-[10px]">Voltar</span>
+              </button>
+              <button type="button" data-cmd="HOME" aria-label="Início"
+                class="remote-btn flex h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-slate-200">
+                <i data-lucide="home" class="h-4 w-4 text-indigo-300"></i>
+                <span class="text-[10px]">Início</span>
+              </button>
+              <button type="button" data-cmd="MENU" aria-label="Menu"
+                class="remote-btn flex h-12 flex-col items-center justify-center gap-0.5 rounded-2xl text-slate-200">
+                <i data-lucide="menu" class="h-4 w-4"></i>
+                <span class="text-[10px]">Menu</span>
+              </button>
+            </div>
+
+            <!-- Volume & Media Row -->
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" data-cmd="VOL_DOWN" aria-label="Diminuir Volume"
+                class="remote-btn flex h-12 items-center justify-center gap-2 rounded-2xl text-slate-100 font-semibold text-sm">
+                <i data-lucide="volume-1" class="h-4 w-4 text-slate-300"></i>
+                <span>VOL −</span>
+              </button>
+              <button type="button" data-cmd="VOL_UP" aria-label="Aumentar Volume"
+                class="remote-btn flex h-12 items-center justify-center gap-2 rounded-2xl text-slate-100 font-semibold text-sm">
+                <i data-lucide="volume-2" class="h-4 w-4 text-slate-300"></i>
+                <span>VOL +</span>
+              </button>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2.5 pt-1 border-t border-slate-800/80">
+              <button type="button" data-cmd="REWIND" aria-label="Voltar 10s"
+                class="remote-btn flex h-10 items-center justify-center rounded-xl text-slate-300">
+                <i data-lucide="rewind" class="h-4 w-4"></i>
+              </button>
+              <button type="button" data-cmd="PLAY_PAUSE" aria-label="Reproduzir ou Pausar"
+                class="remote-btn flex h-10 items-center justify-center rounded-xl text-white">
+                <i data-lucide="play" class="h-4 w-4"></i>
+              </button>
+              <button type="button" data-cmd="FORWARD" aria-label="Avançar 10s"
+                class="remote-btn flex h-10 items-center justify-center rounded-xl text-slate-300">
+                <i data-lucide="fast-forward" class="h-4 w-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 2: TOUCHPAD / MOUSE -->
+          <div id="panel-touchpad" class="tab-panel hidden space-y-4">
+            <div class="flex items-center justify-between text-xs text-slate-400">
+              <span>Arraste para mover o cursor na tela</span>
+              <span id="touchpadCoords" class="font-mono text-[11px] text-indigo-300">X: 50% · Y: 50%</span>
+            </div>
+            <div id="touchpadArea"
+              class="touchpad-surface relative h-56 w-full rounded-2xl border border-slate-700/80 flex items-center justify-center cursor-crosshair overflow-hidden">
+              <div class="pointer-events-none text-center px-4">
+                <i data-lucide="hand" class="mx-auto mb-2 h-6 w-6 text-indigo-400/70"></i>
+                <p class="text-xs text-slate-400">Deslize com o dedo ou mouse</p>
+                <p class="text-[11px] text-slate-500 mt-0.5">Toque rápido para clicar</p>
+              </div>
+              <div id="touchpadDot" class="pointer-events-none absolute h-4 w-4 -ml-2 -mt-2 rounded-full bg-indigo-400/80 shadow-[0_0_12px_#818cf8] transition-transform duration-75" style="left:50%;top:50%;"></div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" data-cmd="MOUSE_CLICK"
+                class="remote-btn flex h-12 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold text-white">
+                <i data-lucide="mouse-pointer-click" class="h-4 w-4 text-indigo-400"></i>
+                <span>Clique Esq. (OK)</span>
+              </button>
+              <button type="button" data-cmd="BACK"
+                class="remote-btn flex h-12 items-center justify-center gap-1.5 rounded-xl text-xs font-semibold text-slate-200">
+                <i data-lucide="undo-2" class="h-4 w-4 text-amber-400"></i>
+                <span>Clique Dir. (Voltar)</span>
+              </button>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button type="button" data-cmd="UP"
+                class="remote-btn flex h-10 items-center justify-center gap-1.5 rounded-xl text-xs text-slate-300">
+                <i data-lucide="arrow-up" class="h-4 w-4"></i>
+                <span>Rolar Cima</span>
+              </button>
+              <button type="button" data-cmd="DOWN"
+                class="remote-btn flex h-10 items-center justify-center gap-1.5 rounded-xl text-xs text-slate-300">
+                <i data-lucide="arrow-down" class="h-4 w-4"></i>
+                <span>Rolar Baixo</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- TAB 3: REMOTE KEYBOARD -->
+          <div id="panel-keyboard" class="tab-panel hidden space-y-4">
+            <p class="text-xs text-slate-400">
+              Digite direto do seu celular ou PC para pesquisar no YouTube, Netflix ou navegador do HY300.
+            </p>
+            <form id="keyboardForm" class="space-y-3">
+              <input id="remoteTextInput" type="text" placeholder="Ex.: Interestelar trailer 4K..."
+                class="w-full rounded-xl border border-slate-700 bg-slate-900/90 px-3.5 py-3 text-sm text-white placeholder-slate-500 focus:border-indigo-500 focus:outline-none" />
+              <div class="grid grid-cols-2 gap-2.5">
+                <button type="submit"
+                  class="flex h-11 items-center justify-center gap-1.5 rounded-xl bg-indigo-600 text-xs font-semibold text-white hover:bg-indigo-500 transition">
+                  <i data-lucide="send" class="h-4 w-4"></i>
+                  <span>Enviar Texto</span>
+                </button>
+                <button type="button" id="btnSendBackspace"
+                  class="remote-btn flex h-11 items-center justify-center gap-1.5 rounded-xl text-xs font-medium text-slate-200">
+                  <i data-lucide="delete" class="h-4 w-4 text-rose-400"></i>
+                  <span>Apagar (Del)</span>
+                </button>
+              </div>
+            </form>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" data-cmd="ENTER" class="remote-btn h-10 rounded-xl text-xs text-slate-200">Enter</button>
+              <button type="button" data-cmd="SPACE" class="remote-btn h-10 rounded-xl text-xs text-slate-200">Espaço</button>
+              <button type="button" id="btnClearSearch" class="remote-btn h-10 rounded-xl text-xs text-slate-300">Limpar</button>
+            </div>
+            <div class="pt-2 border-t border-slate-800/80">
+              <div class="text-[11px] font-medium text-slate-400 mb-2">Buscas rápidas</div>
+              <div class="flex flex-wrap gap-1.5">
+                <button type="button" data-quicktext="YouTube 4K Natureza" class="quick-text-btn rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-[11px] text-slate-300 hover:bg-slate-700 hover:text-white transition">YouTube 4K</button>
+                <button type="button" data-quicktext="Lo-fi Chill Beats" class="quick-text-btn rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-[11px] text-slate-300 hover:bg-slate-700 hover:text-white transition">Lo-fi Chill</button>
+                <button type="button" data-quicktext="Netflix Top 10" class="quick-text-btn rounded-lg border border-slate-700 bg-slate-800/80 px-2.5 py-1.5 text-[11px] text-slate-300 hover:bg-slate-700 hover:text-white transition">Netflix Top 10</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 4: QUICK APPS -->
+          <div id="panel-apps" class="tab-panel hidden space-y-3">
+            <p class="text-xs text-slate-400">Abra aplicativos e entradas do HY300 com um toque:</p>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button type="button" data-launch="netflix" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-600/20 text-red-400 font-bold text-xs">N</span>
+                <span class="text-xs font-medium text-white">Netflix</span>
+              </button>
+              <button type="button" data-launch="youtube" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-rose-600/20 text-rose-400"><i data-lucide="play" class="h-4 w-4"></i></span>
+                <span class="text-xs font-medium text-white">YouTube</span>
+              </button>
+              <button type="button" data-launch="prime" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-sky-600/20 text-sky-400"><i data-lucide="tv" class="h-4 w-4"></i></span>
+                <span class="text-xs font-medium text-white">Prime Video</span>
+              </button>
+              <button type="button" data-launch="miracast" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600/20 text-emerald-400"><i data-lucide="cast" class="h-4 w-4"></i></span>
+                <span class="text-xs font-medium text-white">Miracast</span>
+              </button>
+              <button type="button" data-launch="airpin" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600/20 text-indigo-400"><i data-lucide="airplay" class="h-4 w-4"></i></span>
+                <span class="text-xs font-medium text-white">AirPin</span>
+              </button>
+              <button type="button" data-launch="hdmi" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-amber-600/20 text-amber-400"><i data-lucide="cable" class="h-4 w-4"></i></span>
+                <span class="text-xs font-medium text-white">HDMI</span>
+              </button>
+              <button type="button" data-launch="settings" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-600/30 text-slate-300"><i data-lucide="settings" class="h-4 w-4"></i></span>
+                <span class="text-xs font-medium text-white">Ajustes</span>
+              </button>
+              <button type="button" data-launch="search" class="app-launch-btn remote-btn flex items-center gap-2.5 rounded-xl px-3 py-3 text-left">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600/20 text-violet-400"><i data-lucide="search" class="h-4 w-4"></i></span>
+                <span class="text-xs font-medium text-white">Buscar</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Keyboard Shortcuts Hint (Desktop) -->
+        <p class="mt-3 hidden sm:block text-center text-[11px] text-slate-500">
+          Teclado físico: <span class="text-slate-300">Setas</span> navegar · <span class="text-slate-300">Enter</span> OK · <span class="text-slate-300">Esc</span> voltar · <span class="text-slate-300">+ / −</span> volume · <span class="text-slate-300">M</span> mudo
+        </p>
+      </section>
+
+      <!-- Right Column: Live Simulated HY300 Screen + Direct IP / Bluetooth Connection Monitor -->
+      <section class="lg:col-span-7 space-y-5">
+
+        <!-- Simulated HY300 Android 11 Screen -->
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4">
+          <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-300">Tela do Projetor HY300 (Simulação ao Vivo)</span>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <span id="screenPowerBadge" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-emerald-300 border border-emerald-500/30">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Ligado
+              </span>
+              <span id="screenVolumeBadge" class="rounded-full bg-slate-800 px-2.5 py-0.5 text-slate-300 border border-slate-700">
+                Vol 60%
+              </span>
+            </div>
+          </div>
+
+          <!-- 16:9 Projection Canvas -->
+          <div id="projectorScreen" class="projector-screen relative aspect-video w-full overflow-hidden rounded-xl p-4 sm:p-5 flex flex-col justify-between">
+            <div id="screenTopBar" class="flex items-center justify-between text-[11px] text-slate-300/90 z-10">
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-white">Android 11 · HY300</span>
+                <span id="screenActiveSource" class="rounded bg-white/10 px-1.5 py-0.5 text-[10px]">Home</span>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <span id="screenMouseIndicator" class="hidden rounded bg-indigo-500/30 border border-indigo-400/40 px-1.5 py-0.5 text-[10px] text-indigo-200">Mouse Ativo</span>
+                <span id="screenConnIconWrap" class="inline-flex items-center gap-1 text-emerald-400">
+                  <i id="screenConnIcon" data-lucide="wifi" class="h-3.5 w-3.5"></i>
+                </span>
+                <span id="screenClock" class="font-mono">23:47</span>
+              </div>
+            </div>
+
+            <div id="screenContent" class="relative my-auto flex-1 flex flex-col justify-center py-2 z-10"></div>
+
+            <div id="screenFooter" class="flex items-center justify-between text-[10px] text-slate-400 z-10">
+              <span id="screenLastAction">Pronto — use o controle ao lado</span>
+              <span>1280×720 · Keystone Auto</span>
+            </div>
+
+            <!-- Volume Overlay Toast -->
+            <div id="screenVolumeOverlay" class="pointer-events-none absolute right-4 top-12 z-20 hidden w-40 rounded-xl border border-white/15 bg-slate-950/90 p-2.5 backdrop-blur-md">
+              <div class="flex items-center justify-between text-[11px] mb-1.5">
+                <span id="volOverlayLabel" class="font-medium text-white">Volume</span>
+                <span id="volOverlayPct" class="font-mono text-indigo-300">60%</span>
+              </div>
+              <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+                <div id="volOverlayBar" class="h-full rounded-full bg-indigo-500 transition-all duration-150" style="width: 60%"></div>
+              </div>
+            </div>
+
+            <!-- Quick Menu Overlay -->
+            <div id="screenMenuOverlay" class="hidden absolute inset-y-3 right-3 z-20 w-52 rounded-xl border border-white/15 bg-slate-950/95 p-3 backdrop-blur-md flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2.5">
+                  <span class="text-xs font-semibold text-white">Menu Rápido</span>
+                  <span class="text-[10px] text-slate-400">HY300</span>
+                </div>
+                <div class="space-y-2 text-[11px]">
+                  <div class="flex items-center justify-between"><span class="text-slate-300">Brilho</span><span class="font-mono text-indigo-300">85%</span></div>
+                  <div class="flex items-center justify-between"><span class="text-slate-300">Keystone</span><span class="text-emerald-300">Automático</span></div>
+                  <div class="flex items-center justify-between"><span class="text-slate-300">Áudio</span><span class="text-slate-200">Cinema</span></div>
+                  <div class="flex items-center justify-between"><span class="text-slate-300">Conexão</span><span id="menuConnMode" class="text-sky-300">IP Wi-Fi</span></div>
+                </div>
+              </div>
+              <p class="text-[10px] text-slate-500">Pressione Voltar ou Menu para fechar</p>
+            </div>
+
+            <!-- Virtual Mouse Cursor -->
+            <div id="virtualCursor" class="pointer-events-none hidden absolute z-30 -ml-1 -mt-1 transition-all duration-75" style="left:50%;top:50%;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#ffffff" stroke="#0f172a" stroke-width="2">
+                <path d="M4 3l7.5 17 2.5-6.5L20.5 11 4 3z"></path>
+              </svg>
+            </div>
+
+            <!-- Standby Overlay -->
+            <div id="screenStandbyOverlay" class="hidden absolute inset-0 z-30 bg-black/95 flex flex-col items-center justify-center text-center p-4">
+              <span class="h-3 w-3 rounded-full bg-red-500 shadow-[0_0_12px_#ef4444] mb-3"></span>
+              <p class="text-sm font-medium text-slate-200">Projetor HY300 em Standby</p>
+              <p class="text-xs text-slate-500 mt-1">Pressione o botão vermelho <span class="text-red-400 font-medium">Power</span> para ligar</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct IP & Bluetooth Connection Monitor -->
+        <div class="rounded-2xl border border-slate-800 bg-slate-900/70 p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-semibold text-white">Conexão Direta (IP / Bluetooth)</h2>
+                <span id="connModePill" class="rounded-full border border-indigo-500/40 bg-indigo-500/15 px-2 py-0.5 text-[10px] font-medium text-indigo-300">
+                  Wi-Fi IP
+                </span>
+              </div>
+              <p class="text-xs text-slate-400 mt-0.5">Sem script ponte ADB: envie comandos por IP direto (HTTP/Remote) ou pareamento Bluetooth.</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="btnCopyLastCmd" type="button"
+                class="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-2.5 py-1.5 text-xs text-slate-200 hover:bg-slate-700 transition">
+                <i data-lucide="copy" class="h-3.5 w-3.5"></i>
+                <span>Copiar último</span>
+              </button>
+              <button id="btnClearLog" type="button"
+                class="rounded-lg border border-slate-800 bg-slate-900 px-2.5 py-1.5 text-xs text-slate-400 hover:text-white transition">
+                Limpar
+              </button>
+            </div>
+          </div>
+
+          <div id="commandLog" class="custom-scroll h-36 overflow-y-auto rounded-xl border border-slate-800 bg-slate-950/90 p-3 font-mono text-xs space-y-1.5">
+            <div class="text-slate-500">// Clique em qualquer botão para ver o pacote IP ou Bluetooth enviado ao HY300.</div>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-400">
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="rounded-md bg-slate-800/90 px-2 py-0.5 text-slate-300">Wi-Fi IP Direto</span>
+              <span class="rounded-md bg-slate-800/90 px-2 py-0.5 text-slate-300">Web Bluetooth (BLE)</span>
+              <span class="rounded-md bg-slate-800/90 px-2 py-0.5 text-slate-300">Sem Ponte ADB</span>
+            </div>
+            <button id="btnOpenBridgeLink" type="button" class="text-indigo-400 hover:text-indigo-300 font-medium underline underline-offset-2">
+              Configurar IP ou Parear Bluetooth
+            </button>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal: Direct IP & Bluetooth Connection (No ADB Bridge) -->
+  <div id="connectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+    <div class="custom-scroll max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-slate-700/80 bg-slate-900 p-5 sm:p-6 shadow-2xl space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h3 class="text-base font-semibold text-white">Conectar ao HY300 (IP ou Bluetooth)</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Escolha conectar diretamente pelo endereço IP na rede Wi-Fi ou via Bluetooth — sem script ponte ADB.</p>
+        </div>
+        <button id="btnCloseModal" type="button" class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+
+      <!-- Connection Type Tabs -->
+      <div class="grid grid-cols-2 gap-1.5 rounded-xl border border-slate-800 bg-slate-950 p-1">
+        <button type="button" data-conn-tab="ip" class="conn-tab flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition bg-indigo-600 text-white">
+          <i data-lucide="wifi" class="h-4 w-4"></i>
+          <span>Wi-Fi (IP Direto)</span>
+        </button>
+        <button type="button" data-conn-tab="bluetooth" class="conn-tab flex items-center justify-center gap-2 rounded-lg py-2 text-xs font-semibold transition text-slate-400 hover:text-white">
+          <i data-lucide="bluetooth" class="h-4 w-4"></i>
+          <span>Bluetooth</span>
+        </button>
+      </div>
+
+      <!-- TAB A: DIRECT IP -->
+      <div id="connPanel-ip" class="conn-panel space-y-4">
+        <div class="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-200 leading-relaxed">
+          <strong>Como funciona sem ADB:</strong> Na pré-visualização, os comandos rodam em modo simulado. Para controlar o HY300 real via IP sem ADB, instale no projetor um receptor Wi-Fi como <strong>TranScreen</strong> ou <strong>Android TV Remote Service</strong> e informe o IP do projetor abaixo.
+        </div>
+
+        <form id="profileForm" class="space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label for="inputProfileName" class="block text-xs font-medium text-slate-300 mb-1">Nome do Projetor</label>
+              <input id="inputProfileName" type="text" value="HY300 Sala" required
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label for="inputProfileProtocol" class="block text-xs font-medium text-slate-300 mb-1">Protocolo Direto</label>
+              <select id="inputProfileProtocol"
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs text-white focus:border-indigo-500 focus:outline-none">
+                <option value="TranScreen / HTTP">TranScreen / HTTP (Porta 8080)</option>
+                <option value="Android TV Remote">Android TV Remote (Porta 6466)</option>
+                <option value="EShare / Miracast">EShare / Receptor Local (Porta 8000)</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label for="inputProfileIp" class="block text-xs font-medium text-slate-300 mb-1">IP Wi-Fi do HY300</label>
+              <input id="inputProfileIp" type="text" value="192.168.1.50" placeholder="Ex.: 192.168.1.50" required
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-mono text-white focus:border-indigo-500 focus:outline-none" />
+            </div>
+            <div>
+              <label for="inputProfilePort" class="block text-xs font-medium text-slate-300 mb-1">Porta</label>
+              <input id="inputProfilePort" type="text" value="8080" required
+                class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-mono text-white focus:border-indigo-500 focus:outline-none" />
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <button type="submit"
+              class="rounded-lg bg-indigo-600 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-500 transition">
+              Salvar e Conectar via IP
+            </button>
+          </div>
+        </form>
+
+        <div id="savedProfilesWrap" class="space-y-2 border-t border-slate-800 pt-3">
+          <div class="text-xs font-medium text-slate-300">Projetores salvos (IP)</div>
+          <div id="savedProfilesList" class="space-y-1.5"></div>
+        </div>
+      </div>
+
+      <!-- TAB B: BLUETOOTH -->
+      <div id="connPanel-bluetooth" class="conn-panel hidden space-y-4">
+        <div class="rounded-xl border border-sky-500/30 bg-sky-500/10 p-3 text-xs text-sky-200 leading-relaxed">
+          <strong>Pareamento Bluetooth:</strong> Usa a API <strong>Web Bluetooth</strong> do navegador (Chrome/Edge no Android, Windows e macOS) para buscar dispositivos BLE próximos. No iPhone/iPad (Safari), o navegador não libera Bluetooth diretamente — nesse caso use o modo Wi-Fi IP ou um app nativo Bluetooth HID.
+        </div>
+
+        <div class="rounded-xl border border-slate-800 bg-slate-950/80 p-4 space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5">
+              <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-500/20 text-sky-400">
+                <i data-lucide="bluetooth" class="h-5 w-5"></i>
+              </div>
+              <div>
+                <div id="btDeviceName" class="text-xs font-semibold text-white">Nenhum dispositivo pareado</div>
+                <div id="btDeviceStatus" class="text-[11px] text-slate-400">Pronto para buscar projetor HY300 via Bluetooth</div>
+              </div>
+            </div>
+            <span id="btStatusBadge" class="rounded-full bg-slate-800 px-2.5 py-0.5 text-[10px] font-medium text-slate-400">Desconectado</span>
+          </div>
+
+          <div class="flex flex-wrap gap-2 pt-1">
+            <button id="btnScanBluetooth" type="button"
+              class="flex items-center gap-1.5 rounded-lg bg-sky-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-sky-500 transition">
+              <i data-lucide="search" class="h-3.5 w-3.5"></i>
+              <span>Buscar Dispositivo Bluetooth</span>
+            </button>
+            <button id="btnSimulateBt" type="button"
+              class="flex items-center gap-1.5 rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-700 transition">
+              <i data-lucide="radio" class="h-3.5 w-3.5 text-sky-400"></i>
+              <span>Testar Modo Bluetooth (HY300-BT)</span>
+            </button>
+            <button id="btnDisconnectBt" type="button"
+              class="hidden items-center gap-1.5 rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 py-2 text-xs font-medium text-rose-300 hover:bg-rose-500/25 transition">
+              <span>Desconectar</span>
+            </button>
+          </div>
+        </div>
+
+        <ol class="list-decimal list-inside text-xs text-slate-400 space-y-1">
+          <li>No projetor HY300, abra <strong>Configurações → Bluetooth</strong> e deixe o Bluetooth ativado.</li>
+          <li>Clique em <strong>Buscar Dispositivo Bluetooth</strong> acima (no Chrome/Edge) e selecione o <strong>HY300</strong> na lista.</li>
+          <li>Se o navegador bloquear o Bluetooth ou estiver no iOS, use a aba <strong>Wi-Fi (IP Direto)</strong> acima.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="pointer-events-none fixed bottom-5 left-1/2 z-50 -translate-x-1/2 translate-y-4 opacity-0 transition-all duration-200">
+    <div id="toastInner" class="rounded-full border border-slate-700 bg-slate-900/95 px-4 py-2 text-xs font-medium text-white shadow-xl backdrop-blur-md"></div>
+  </div>
+
+  <script>
+    (function () {
+      // ---------- State ----------
+      const APPS = [
+        { id: 'netflix',  name: 'Netflix',       subtitle: 'Séries e Filmes',      color: 'from-red-600/35 to-red-900/40',       border: 'border-red-500/40',     icon: 'film',         pkg: 'com.netflix.mediaclient' },
+        { id: 'youtube',  name: 'YouTube',       subtitle: 'Vídeos em HD',         color: 'from-rose-600/35 to-rose-900/40',     border: 'border-rose-500/40',    icon: 'play-circle',  pkg: 'com.google.android.youtube.tv' },
+        { id: 'prime',    name: 'Prime Video',   subtitle: 'Catálogo Amazon',      color: 'from-sky-600/35 to-sky-900/40',       border: 'border-sky-500/40',     icon: 'tv',           pkg: 'com.amazon.avod.thirdpartyclient' },
+        { id: 'miracast', name: 'Miracast',      subtitle: 'Espelhar Android',     color: 'from-emerald-600/35 to-emerald-900/40', border: 'border-emerald-500/40', icon: 'cast',         pkg: 'com.hy300.miracast' },
+        { id: 'airpin',   name: 'AirPin',        subtitle: 'AirPlay (iPhone/Mac)', color: 'from-indigo-600/35 to-indigo-900/40', border: 'border-indigo-500/40',  icon: 'airplay',      pkg: 'com.waxrain.airplaydmr' },
+        { id: 'hdmi',     name: 'HDMI',          subtitle: 'Entrada Externa',      color: 'from-amber-600/35 to-amber-900/40',   border: 'border-amber-500/40',   icon: 'cable',        pkg: 'HDMI_INPUT' },
+        { id: 'settings', name: 'Configurações', subtitle: 'Wi-Fi · Bluetooth',    color: 'from-slate-600/40 to-slate-800/50',   border: 'border-slate-500/40',   icon: 'settings',     pkg: 'com.android.settings' },
+        { id: 'search',   name: 'Buscar',        subtitle: 'Teclado Remoto',       color: 'from-violet-600/35 to-violet-900/40', border: 'border-violet-500/40',  icon: 'search',       pkg: 'com.android.search' }
+      ];
+
+      const CMD_MAP = {
+        POWER:        { label: 'Power (Ligar/Desligar)', key: 'KEY_POWER',        code: 26,  hid: '0x30' },
+        SOURCE:       { label: 'Fonte HDMI',             key: 'KEY_TV_INPUT',     code: 178, hid: '0x69' },
+        MUTE:         { label: 'Mudo',                   key: 'KEY_MUTE',         code: 164, hid: '0xE2' },
+        MIRACAST:     { label: 'Abrir Miracast',         key: 'APP_MIRACAST',     code: 201, hid: '0x91' },
+        AIRPIN:       { label: 'Abrir AirPin',           key: 'APP_AIRPIN',       code: 202, hid: '0x92' },
+        MOUSE_TOGGLE: { label: 'Alternar Modo Mouse',    key: 'MODE_MOUSE',       code: 203, hid: '0x93' },
+        UP:           { label: 'Direcional Cima',        key: 'DPAD_UP',          code: 19,  hid: '0x52' },
+        DOWN:         { label: 'Direcional Baixo',       key: 'DPAD_DOWN',        code: 20,  hid: '0x51' },
+        LEFT:         { label: 'Direcional Esquerda',    key: 'DPAD_LEFT',        code: 21,  hid: '0x50' },
+        RIGHT:        { label: 'Direcional Direita',     key: 'DPAD_RIGHT',       code: 22,  hid: '0x4F' },
+        OK:           { label: 'Confirmar (OK)',         key: 'DPAD_CENTER',      code: 23,  hid: '0x28' },
+        BACK:         { label: 'Voltar (Return)',        key: 'KEY_BACK',         code: 4,   hid: '0x29' },
+        HOME:         { label: 'Tela Inicial (Home)',    key: 'KEY_HOME',         code: 3,   hid: '0x223' },
+        MENU:         { label: 'Menu Rápido',            key: 'KEY_MENU',         code: 82,  hid: '0x40' },
+        VOL_UP:       { label: 'Volume +',               key: 'VOLUME_UP',        code: 24,  hid: '0xE9' },
+        VOL_DOWN:     { label: 'Volume −',               key: 'VOLUME_DOWN',      code: 25,  hid: '0xEA' },
+        PLAY_PAUSE:   { label: 'Play / Pause',           key: 'MEDIA_PLAY_PAUSE', code: 85,  hid: '0xCD' },
+        REWIND:       { label: 'Voltar 10s',             key: 'MEDIA_REWIND',     code: 89,  hid: '0xB4' },
+        FORWARD:      { label: 'Avançar 10s',            key: 'MEDIA_FAST_FWD',   code: 90,  hid: '0xB3' },
+        ENTER:        { label: 'Tecla Enter',            key: 'KEY_ENTER',        code: 66,  hid: '0x28' },
+        SPACE:        { label: 'Tecla Espaço',           key: 'KEY_SPACE',        code: 62,  hid: '0x2C' },
+        DEL:          { label: 'Apagar (Backspace)',     key: 'KEY_DEL',          code: 67,  hid: '0x2A' },
+        MOUSE_CLICK:  { label: 'Clique do Mouse',        key: 'MOUSE_LEFT_CLICK', code: 272, hid: '0x01' }
+      };
+
+      const state = {
+        power: true,
+        volume: 60,
+        muted: false,
+        mouseMode: false,
+        menuOpen: false,
+        activeTab: 'remote',
+        connMode: 'ip', // 'ip' | 'bluetooth'
+        btDevice: null,
+        btDeviceName: '',
+        btSimulated: false,
+        focusedIndex: 0,
+        currentView: 'home',
+        isPlaying: true,
+        mediaProgress: 34,
+        searchText: '',
+        cursorX: 50,
+        cursorY: 50,
+        soundEnabled: true,
+        logs: [],
+        profiles: [
+          { id: 'default-sala', name: 'HY300 Sala', ip: '192.168.1.50', port: '8080', protocol: 'TranScreen / HTTP' }
+        ],
+        activeProfileId: 'default-sala'
+      };
+
+      // Load saved profiles safely
+      try {
+        const saved = localStorage.getItem('hy300_remote_profiles_v2');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            state.profiles = parsed;
+            state.activeProfileId = parsed[0].id;
+          }
+        }
+      } catch (e) {}
+
+      // ---------- Audio Synthesizer ----------
+      let audioCtx = null;
+      function playClickSound(freq) {
+        if (!state.soundEnabled) return;
+        try {
+          if (!audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+            audioCtx = new Ctx();
+          }
+          if (audioCtx.state === 'suspended') audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq || 520, audioCtx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(180, audioCtx.currentTime + 0.035);
+          gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.04);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + 0.045);
+        } catch (e) {}
+      }
+
+      function vibrateLight() {
+        try {
+          if (navigator.vibrate) navigator.vibrate(14);
+        } catch (e) {}
+      }
+
+      // ---------- Helpers ----------
+      function getActiveProfile() {
+        return state.profiles.find(p => p.id === state.activeProfileId) || state.profiles[0];
+      }
+
+      function saveProfiles() {
+        try {
+          localStorage.setItem('hy300_remote_profiles_v2', JSON.stringify(state.profiles));
+        } catch (e) {}
+      }
+
+      let toastTimer = null;
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        const inner = document.getElementById('toastInner');
+        inner.textContent = msg;
+        el.classList.remove('opacity-0', 'translate-y-4');
+        el.classList.add('opacity-100', 'translate-y-0');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          el.classList.remove('opacity-100', 'translate-y-0');
+          el.classList.add('opacity-0', 'translate-y-4');
+        }, 2300);
+      }
+
+      function copyText(text, successMsg) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            showToast(successMsg || 'Copiado!');
+          }).catch(() => fallbackCopy(text, successMsg));
+        } else {
+          fallbackCopy(text, successMsg);
+        }
+      }
+
+      function fallbackCopy(text, successMsg) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand('copy');
+          showToast(successMsg || 'Copiado!');
+        } catch (e) {
+          showToast('Não foi possível copiar automaticamente.');
+        }
+        document.body.removeChild(ta);
+      }
+
+      function pulseSignalLed() {
+        const led = document.getElementById('signalLed');
+        led.classList.remove('led-pulse');
+        void led.offsetWidth;
+        led.classList.add('led-pulse');
+      }
+
+      let volTimer = null;
+      function showVolumeOverlay() {
+        const ov = document.getElementById('screenVolumeOverlay');
+        const lbl = document.getElementById('volOverlayLabel');
+        const pct = document.getElementById('volOverlayPct');
+        const bar = document.getElementById('volOverlayBar');
+        lbl.textContent = state.muted ? 'Áudio Mudo' : 'Volume';
+        pct.textContent = state.muted ? '0%' : state.volume + '%';
+        bar.style.width = (state.muted ? 0 : state.volume) + '%';
+        bar.className = 'h-full rounded-full transition-all duration-150 ' + (state.muted ? 'bg-amber-500' : 'bg-indigo-500');
+        ov.classList.remove('hidden');
+        clearTimeout(volTimer);
+        volTimer = setTimeout(() => ov.classList.add('hidden'), 1800);
+      }
+
+      function addCommandLog(label, payloadStr) {
+        const now = new Date();
+        const timeStr = now.toTimeString().slice(0, 8);
+        state.logs.unshift({ time: timeStr, label, cmd: payloadStr });
+        if (state.logs.length > 35) state.logs.pop();
+        renderCommandLog();
+      }
+
+      function formatDispatchPayload(meta, customDetail) {
+        if (state.connMode === 'bluetooth') {
+          const target = state.btDeviceName || 'HY300-BT';
+          return customDetail
+            ? `BT [${target}] → ${customDetail}`
+            : `BT [${target}] → HID ${meta.key} (${meta.hid})`;
+        }
+        const prof = getActiveProfile();
+        return customDetail
+          ? `IP ${prof.ip}:${prof.port} (${prof.protocol}) → ${customDetail}`
+          : `IP ${prof.ip}:${prof.port} (${prof.protocol}) → ${meta.key} (code=${meta.code})`;
+      }
+
+      function renderCommandLog() {
+        const box = document.getElementById('commandLog');
+        if (state.logs.length === 0) {
+          box.innerHTML = '<div class="text-slate-500">// Clique em qualquer botão para ver o pacote IP ou Bluetooth enviado ao HY300.</div>';
+          return;
+        }
+        box.innerHTML = state.logs.map(item => `
+          <div class="flex flex-wrap items-baseline gap-x-2 border-b border-slate-800/60 pb-1 last:border-0">
+            <span class="text-slate-500">[${item.time}]</span>
+            <span class="text-indigo-300">${escapeHtml(item.label)}:</span>
+            <span class="${state.connMode === 'bluetooth' ? 'text-sky-300' : 'text-emerald-300'} break-all">${escapeHtml(item.cmd)}</span>
+          </div>
+        `).join('');
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // ---------- Screen & Status Rendering ----------
+      function renderScreen() {
+        const standby = document.getElementById('screenStandbyOverlay');
+        const powerBadge = document.getElementById('screenPowerBadge');
+        const volBadge = document.getElementById('screenVolumeBadge');
+        const activeSource = document.getElementById('screenActiveSource');
+        const menuOv = document.getElementById('screenMenuOverlay');
+        const mouseInd = document.getElementById('screenMouseIndicator');
+        const cursorEl = document.getElementById('virtualCursor');
+        const modeBadge = document.getElementById('remoteModeBadge');
+        const btnMouse = document.getElementById('btnMouseToggle');
+        const content = document.getElementById('screenContent');
+        const connPill = document.getElementById('connModePill');
+        const headerLabel = document.getElementById('headerProfileLabel');
+        const headerDot = document.getElementById('headerStatusDot');
+        const screenConnIcon = document.getElementById('screenConnIcon');
+        const menuConnMode = document.getElementById('menuConnMode');
+
+        const prof = getActiveProfile();
+        if (state.connMode === 'bluetooth') {
+          const btName = state.btDeviceName || 'HY300-BT';
+          headerLabel.textContent = `${btName} · Bluetooth${state.btSimulated ? ' (Simulação)' : ''}`;
+          headerDot.className = 'inline-block h-2 w-2 rounded-full bg-sky-400';
+          connPill.textContent = `Bluetooth · ${btName}`;
+          connPill.className = 'rounded-full border border-sky-500/40 bg-sky-500/15 px-2 py-0.5 text-[10px] font-medium text-sky-300';
+          screenConnIcon.setAttribute('data-lucide', 'bluetooth');
+          menuConnMode.textContent = 'Bluetooth';
+        } else {
+          headerLabel.textContent = `${prof.name} (${prof.ip}:${prof.port}) · IP Direto`;
+          headerDot.className = 'inline-block h-2 w-2 rounded-full bg-emerald-400';
+          connPill.textContent = `Wi-Fi IP · ${prof.ip}`;
+          connPill.className = 'rounded-full border border-indigo-500/40 bg-indigo-500/15 px-2 py-0.5 text-[10px] font-medium text-indigo-300';
+          screenConnIcon.setAttribute('data-lucide', 'wifi');
+          menuConnMode.textContent = `IP (${prof.ip})`;
+        }
+
+        // Power state
+        standby.classList.toggle('hidden', state.power);
+        if (state.power) {
+          powerBadge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span> Ligado';
+          powerBadge.className = 'inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-emerald-300 border border-emerald-500/30';
+        } else {
+          powerBadge.innerHTML = '<span class="h-1.5 w-1.5 rounded-full bg-red-400"></span> Standby';
+          powerBadge.className = 'inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-0.5 text-red-300 border border-red-500/30';
+        }
+
+        volBadge.textContent = state.muted ? 'Mudo' : `Vol ${state.volume}%`;
+        menuOv.classList.toggle('hidden', !state.menuOpen || !state.power);
+
+        const showCursor = state.power && (state.mouseMode || state.activeTab === 'touchpad');
+        mouseInd.classList.toggle('hidden', !showCursor);
+        cursorEl.classList.toggle('hidden', !showCursor);
+        cursorEl.style.left = state.cursorX + '%';
+        cursorEl.style.top = state.cursorY + '%';
+        modeBadge.textContent = showCursor ? 'Modo Mouse Ativo' : 'D-Pad Ativo';
+        btnMouse.classList.toggle('ring-2', state.mouseMode);
+        btnMouse.classList.toggle('ring-indigo-400', state.mouseMode);
+
+        if (state.currentView === 'home') {
+          activeSource.textContent = 'Home';
+          content.innerHTML = `
+            <div class="grid grid-cols-4 gap-2 sm:gap-2.5">
+              ${APPS.map((app, idx) => {
+                const isFocused = idx === state.focusedIndex;
+                return `
+                  <div class="rounded-xl border bg-gradient-to-br ${app.color} ${isFocused ? 'border-white ring-2 ring-indigo-400 scale-[1.04] shadow-lg' : app.border + ' opacity-85'} p-2 sm:p-2.5 transition-all duration-150 flex flex-col justify-between min-h-[62px] sm:min-h-[78px]">
+                    <div class="flex items-center justify-between">
+                      <i data-lucide="${app.icon}" class="h-4 w-4 sm:h-5 sm:w-5 text-white"></i>
+                      ${isFocused ? '<span class="h-1.5 w-1.5 rounded-full bg-white"></span>' : ''}
+                    </div>
+                    <div class="mt-1.5">
+                      <div class="truncate text-[10px] sm:text-xs font-semibold text-white">${app.name}</div>
+                      <div class="hidden sm:block truncate text-[9px] text-slate-300/90">${app.subtitle}</div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else {
+          const app = APPS.find(a => a.id === state.currentView) || APPS[0];
+          activeSource.textContent = app.name;
+
+          if (app.id === 'youtube' || app.id === 'netflix' || app.id === 'prime') {
+            content.innerHTML = `
+              <div class="rounded-xl border ${app.border} bg-gradient-to-br ${app.color} p-4 flex flex-col justify-between h-full">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="${app.icon}" class="h-5 w-5 text-white"></i>
+                    <div>
+                      <div class="text-sm font-bold text-white">${app.name}</div>
+                      <div class="text-[11px] text-slate-200/80">${state.searchText ? 'Reproduzindo: ' + escapeHtml(state.searchText) : 'Sessão Cinema · HD 720p'}</div>
+                    </div>
+                  </div>
+                  <span class="rounded-full bg-black/40 px-2.5 py-0.5 text-[10px] font-medium text-white">
+                    ${state.isPlaying ? 'Reproduzindo' : 'Pausado'}
+                  </span>
+                </div>
+                <div class="my-3 flex items-center justify-center">
+                  <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/15 border border-white/25 text-white">
+                    <i data-lucide="${state.isPlaying ? 'pause' : 'play'}" class="h-6 w-6"></i>
+                  </div>
+                </div>
+                <div>
+                  <div class="h-1.5 w-full overflow-hidden rounded-full bg-black/40">
+                    <div class="h-full rounded-full bg-white transition-all duration-200" style="width:${state.mediaProgress}%"></div>
+                  </div>
+                  <div class="mt-1 flex justify-between text-[10px] text-slate-200/80">
+                    <span>Use ◄◄ / ► / ►► para controlar</span>
+                    <span>${state.mediaProgress}%</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          } else if (app.id === 'miracast' || app.id === 'airpin') {
+            const devName = app.id === 'miracast' ? 'Android (Transmitir / Smart View)' : 'iPhone, iPad ou Mac (AirPlay)';
+            content.innerHTML = `
+              <div class="rounded-xl border ${app.border} bg-gradient-to-br ${app.color} p-4 text-center flex flex-col items-center justify-center h-full">
+                <i data-lucide="${app.icon}" class="h-8 w-8 text-white mb-2"></i>
+                <div class="text-sm font-bold text-white">${app.name} Pronto para Espelhar</div>
+                <p class="text-xs text-slate-200/90 mt-1 max-w-xs">Conecte seu ${devName} na mesma rede Wi-Fi e selecione <strong>HY300-Projector</strong>.</p>
+              </div>
+            `;
+          } else if (app.id === 'hdmi') {
+            content.innerHTML = `
+              <div class="rounded-xl border border-amber-500/40 bg-slate-950/80 p-4 text-center flex flex-col items-center justify-center h-full">
+                <i data-lucide="cable" class="h-8 w-8 text-amber-400 mb-2"></i>
+                <div class="text-sm font-bold text-white">Entrada HDMI Ativa</div>
+                <p class="text-xs text-slate-400 mt-1">Aguardando sinal de notebook, console ou TV Stick na porta HDMI traseira.</p>
+              </div>
+            `;
+          } else if (app.id === 'settings') {
+            content.innerHTML = `
+              <div class="rounded-xl border border-slate-600/50 bg-slate-950/75 p-4 h-full flex flex-col justify-center space-y-2 text-xs">
+                <div class="font-semibold text-white mb-1 flex items-center gap-2"><i data-lucide="settings" class="h-4 w-4 text-indigo-400"></i> Configurações do HY300</div>
+                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                  <div class="rounded-lg bg-slate-900 p-2 border border-slate-800"><span class="text-slate-400 block">Rede Wi-Fi</span><span class="text-white font-mono">${escapeHtml(prof.ip)}</span></div>
+                  <div class="rounded-lg bg-slate-900 p-2 border border-slate-800"><span class="text-slate-400 block">Bluetooth</span><span class="text-emerald-300">${state.connMode === 'bluetooth' ? 'Pareado' : 'Disponível (BT 5.0)'}</span></div>
+                  <div class="rounded-lg bg-slate-900 p-2 border border-slate-800"><span class="text-slate-400 block">Protocolo IP</span><span class="text-white truncate">${escapeHtml(prof.protocol)}</span></div>
+                  <div class="rounded-lg bg-slate-900 p-2 border border-slate-800"><span class="text-slate-400 block">Sistema</span><span class="text-white">Android 11 (H713)</span></div>
+                </div>
+              </div>
+            `;
+          } else {
+            content.innerHTML = `
+              <div class="rounded-xl border border-violet-500/40 bg-slate-950/80 p-4 h-full flex flex-col justify-center">
+                <div class="text-xs font-semibold text-violet-300 mb-2 flex items-center gap-1.5"><i data-lucide="search" class="h-4 w-4"></i> Campo de Busca do Projetor</div>
+                <div class="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2.5 text-sm text-white font-medium min-h-[42px] flex items-center">
+                  ${state.searchText ? escapeHtml(state.searchText) : '<span class="text-slate-500">Use a aba Teclado para digitar aqui...</span>'}
+                </div>
+              </div>
+            `;
+          }
+        }
+
+        if (window.lucide) lucide.createIcons();
+      }
+
+      // ---------- Command Dispatcher ----------
+      function executeCommand(cmd) {
+        pulseSignalLed();
+        vibrateLight();
+        playClickSound(cmd === 'POWER' ? 320 : cmd === 'OK' ? 640 : 480);
+
+        const meta = CMD_MAP[cmd] || { label: cmd, key: cmd, code: 0, hid: '0x00' };
+        addCommandLog(meta.label, formatDispatchPayload(meta));
+
+        if (cmd === 'POWER') {
+          state.power = !state.power;
+          if (!state.power) state.menuOpen = false;
+          document.getElementById('screenLastAction').textContent = state.power ? 'Projetor ligado' : 'Projetor em standby';
+          renderScreen();
+          return;
+        }
+
+        if (!state.power) {
+          showToast('Projetor em Standby — pressione Power para ligar');
+          return;
+        }
+
+        document.getElementById('screenLastAction').textContent = `Comando: ${meta.label}`;
+
+        switch (cmd) {
+          case 'UP':
+            if (state.mouseMode) {
+              state.cursorY = Math.max(8, state.cursorY - 10);
+            } else if (state.currentView === 'home') {
+              state.focusedIndex = (state.focusedIndex - 4 + APPS.length) % APPS.length;
+            }
+            break;
+          case 'DOWN':
+            if (state.mouseMode) {
+              state.cursorY = Math.min(92, state.cursorY + 10);
+            } else if (state.currentView === 'home') {
+              state.focusedIndex = (state.focusedIndex + 4) % APPS.length;
+            }
+            break;
+          case 'LEFT':
+            if (state.mouseMode) {
+              state.cursorX = Math.max(6, state.cursorX - 10);
+            } else if (state.currentView === 'home') {
+              state.focusedIndex = (state.focusedIndex - 1 + APPS.length) % APPS.length;
+            }
+            break;
+          case 'RIGHT':
+            if (state.mouseMode) {
+              state.cursorX = Math.min(94, state.cursorX + 10);
+            } else if (state.currentView === 'home') {
+              state.focusedIndex = (state.focusedIndex + 1) % APPS.length;
+            }
+            break;
+          case 'OK':
+          case 'ENTER':
+          case 'MOUSE_CLICK':
+            if (state.menuOpen) {
+              state.menuOpen = false;
+            } else if (state.currentView === 'home') {
+              if (cmd === 'MOUSE_CLICK' || state.mouseMode) {
+                const col = Math.min(3, Math.floor((state.cursorX / 100) * 4));
+                const row = state.cursorY < 50 ? 0 : 1;
+                state.focusedIndex = row * 4 + col;
+              }
+              state.currentView = APPS[state.focusedIndex].id;
+            } else if (['youtube', 'netflix', 'prime'].includes(state.currentView)) {
+              state.isPlaying = !state.isPlaying;
+            }
+            break;
+          case 'BACK':
+            if (state.menuOpen) state.menuOpen = false;
+            else state.currentView = 'home';
+            break;
+          case 'HOME':
+            state.menuOpen = false;
+            state.currentView = 'home';
+            break;
+          case 'MENU':
+            state.menuOpen = !state.menuOpen;
+            break;
+          case 'VOL_UP':
+            state.muted = false;
+            state.volume = Math.min(100, state.volume + 10);
+            showVolumeOverlay();
+            break;
+          case 'VOL_DOWN':
+            state.muted = false;
+            state.volume = Math.max(0, state.volume - 10);
+            showVolumeOverlay();
+            break;
+          case 'MUTE':
+            state.muted = !state.muted;
+            showVolumeOverlay();
+            break;
+          case 'SOURCE':
+            state.menuOpen = false;
+            state.currentView = state.currentView === 'hdmi' ? 'home' : 'hdmi';
+            break;
+          case 'MIRACAST':
+            state.menuOpen = false;
+            state.currentView = 'miracast';
+            break;
+          case 'AIRPIN':
+            state.menuOpen = false;
+            state.currentView = 'airpin';
+            break;
+          case 'MOUSE_TOGGLE':
+            state.mouseMode = !state.mouseMode;
+            showToast(state.mouseMode ? 'Modo Mouse ativado' : 'Modo D-Pad ativado');
+            break;
+          case 'PLAY_PAUSE':
+            state.isPlaying = !state.isPlaying;
+            break;
+          case 'REWIND':
+            state.mediaProgress = Math.max(0, state.mediaProgress - 10);
+            break;
+          case 'FORWARD':
+            state.mediaProgress = Math.min(100, state.mediaProgress + 10);
+            break;
+          case 'SPACE':
+            state.searchText += ' ';
+            state.currentView = 'search';
+            break;
+          case 'DEL':
+            state.searchText = state.searchText.slice(0, -1);
+            state.currentView = 'search';
+            break;
+        }
+
+        renderScreen();
+      }
+
+      function launchApp(appId) {
+        if (!state.power) state.power = true;
+        const idx = APPS.findIndex(a => a.id === appId);
+        if (idx >= 0) state.focusedIndex = idx;
+        state.menuOpen = false;
+        state.currentView = appId;
+        const app = APPS[idx] || APPS[0];
+        pulseSignalLed();
+        vibrateLight();
+        playClickSound(600);
+        addCommandLog(`Abrir ${app.name}`, formatDispatchPayload(CMD_MAP.OK, `LAUNCH ${app.pkg}`));
+        document.getElementById('screenLastAction').textContent = `App aberto: ${app.name}`;
+        renderScreen();
+      }
+
+      function sendRemoteText(text) {
+        const clean = text.trim();
+        if (!clean) {
+          showToast('Digite algum texto para enviar.');
+          return;
+        }
+        if (!state.power) state.power = true;
+        state.searchText = clean;
+        state.currentView = 'search';
+        pulseSignalLed();
+        vibrateLight();
+        playClickSound(560);
+        addCommandLog(`Texto "${clean}"`, formatDispatchPayload(CMD_MAP.ENTER, `INPUT_TEXT "${clean}"`));
+        document.getElementById('screenLastAction').textContent = `Texto enviado: ${clean}`;
+        renderScreen();
+        showToast('Texto enviado ao projetor');
+      }
+
+      // ---------- Tabs ----------
+      function switchTab(tabName) {
+        state.activeTab = tabName;
+        document.querySelectorAll('.mode-tab').forEach(btn => {
+          const active = btn.dataset.tab === tabName;
+          btn.classList.toggle('bg-indigo-600', active);
+          btn.classList.toggle('text-white', active);
+          btn.classList.toggle('text-slate-400', !active);
+        });
+        document.querySelectorAll('.tab-panel').forEach(panel => {
+          panel.classList.toggle('hidden', panel.id !== `panel-${tabName}`);
+        });
+        renderScreen();
+      }
+
+      function switchConnTab(tabName) {
+        document.querySelectorAll('.conn-tab').forEach(btn => {
+          const active = btn.dataset.connTab === tabName;
+          btn.classList.toggle('bg-indigo-600', active && tabName === 'ip');
+          btn.classList.toggle('bg-sky-600', active && tabName === 'bluetooth');
+          btn.classList.toggle('text-white', active);
+          btn.classList.toggle('text-slate-400', !active);
+        });
+        document.querySelectorAll('.conn-panel').forEach(panel => {
+          panel.classList.toggle('hidden', panel.id !== `connPanel-${tabName}`);
+        });
+      }
+
+      // ---------- Touchpad Pointer Handling ----------
+      const touchpadArea = document.getElementById('touchpadArea');
+      const touchpadDot = document.getElementById('touchpadDot');
+      const touchpadCoords = document.getElementById('touchpadCoords');
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let movedDist = 0;
+
+      function updateCursorFromPointer(clientX, clientY) {
+        const rect = touchpadArea.getBoundingClientRect();
+        const xPct = Math.max(4, Math.min(96, Math.round(((clientX - rect.left) / rect.width) * 100)));
+        const yPct = Math.max(6, Math.min(94, Math.round(((clientY - rect.top) / rect.height) * 100)));
+        state.cursorX = xPct;
+        state.cursorY = yPct;
+        touchpadDot.style.left = xPct + '%';
+        touchpadDot.style.top = yPct + '%';
+        touchpadCoords.textContent = `X: ${xPct}% · Y: ${yPct}%`;
+        const cursorEl = document.getElementById('virtualCursor');
+        cursorEl.style.left = xPct + '%';
+        cursorEl.style.top = yPct + '%';
+      }
+
+      touchpadArea.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        movedDist = 0;
+        startX = e.clientX;
+        startY = e.clientY;
+        touchpadArea.setPointerCapture(e.pointerId);
+        updateCursorFromPointer(e.clientX, e.clientY);
+      });
+
+      touchpadArea.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        movedDist += Math.hypot(e.clientX - startX, e.clientY - startY);
+        startX = e.clientX;
+        startY = e.clientY;
+        updateCursorFromPointer(e.clientX, e.clientY);
+      });
+
+      touchpadArea.addEventListener('pointerup', () => {
+        if (!isDragging) return;
+        isDragging = false;
+        if (movedDist < 10) {
+          executeCommand('MOUSE_CLICK');
+        } else {
+          const px = Math.round((state.cursorX / 100) * 1280);
+          const py = Math.round((state.cursorY / 100) * 720);
+          addCommandLog('Mover Cursor', formatDispatchPayload(CMD_MAP.MOUSE_CLICK, `POINTER (${px}, ${py})`));
+        }
+      });
+
+      // ---------- Bluetooth Connection (Web Bluetooth API) ----------
+      function updateBluetoothUI() {
+        const nameEl = document.getElementById('btDeviceName');
+        const statusEl = document.getElementById('btDeviceStatus');
+        const badgeEl = document.getElementById('btStatusBadge');
+        const discBtn = document.getElementById('btnDisconnectBt');
+
+        if (state.connMode === 'bluetooth' && state.btDeviceName) {
+          nameEl.textContent = state.btDeviceName;
+          statusEl.textContent = state.btSimulated
+            ? 'Modo Bluetooth simulado ativo para testes no navegador'
+            : 'Conectado via Web Bluetooth (BLE GATT)';
+          badgeEl.textContent = 'Conectado';
+          badgeEl.className = 'rounded-full bg-sky-500/20 border border-sky-500/40 px-2.5 py-0.5 text-[10px] font-medium text-sky-300';
+          discBtn.classList.remove('hidden');
+          discBtn.classList.add('flex');
+        } else {
+          nameEl.textContent = 'Nenhum dispositivo pareado';
+          statusEl.textContent = 'Pronto para buscar projetor HY300 via Bluetooth';
+          badgeEl.textContent = 'Desconectado';
+          badgeEl.className = 'rounded-full bg-slate-800 px-2.5 py-0.5 text-[10px] font-medium text-slate-400';
+          discBtn.classList.add('hidden');
+          discBtn.classList.remove('flex');
+        }
+      }
+
+      async function scanWebBluetooth() {
+        if (!navigator.bluetooth) {
+          showToast('Web Bluetooth indisponível neste navegador. Use Chrome/Edge ou o modo Wi-Fi IP.');
+          document.getElementById('btDeviceStatus').textContent = 'Web Bluetooth não suportado neste navegador/dispositivo.';
+          return;
+        }
+        try {
+          document.getElementById('btDeviceStatus').textContent = 'Buscando dispositivos Bluetooth próximos...';
+          const device = await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: ['00001812-0000-1000-8000-00805f9b34fb', 'generic_access']
+          });
+          if (device.gatt) {
+            try {
+              await device.gatt.connect();
+            } catch (gattErr) {}
+          }
+          state.btDevice = device;
+          state.btDeviceName = device.name || 'HY300-Bluetooth';
+          state.btSimulated = false;
+          state.connMode = 'bluetooth';
+          updateBluetoothUI();
+          renderScreen();
+          addCommandLog('Bluetooth Pareado', `BT [${state.btDeviceName}] → Conectado`);
+          showToast(`Pareado com ${state.btDeviceName}`);
+        } catch (err) {
+          if (err && err.name === 'NotFoundError') {
+            document.getElementById('btDeviceStatus').textContent = 'Busca cancelada pelo usuário.';
+          } else {
+            document.getElementById('btDeviceStatus').textContent = 'Bluetooth bloqueado nesta pré-visualização. Use "Testar Modo Bluetooth" ou abra fora do preview.';
+            showToast('Bluetooth indisponível nesta pré-visualização.');
+          }
+        }
+      }
+
+      function activateSimulatedBluetooth() {
+        state.btDevice = null;
+        state.btDeviceName = 'HY300-BT';
+        state.btSimulated = true;
+        state.connMode = 'bluetooth';
+        updateBluetoothUI();
+        renderScreen();
+        addCommandLog('Bluetooth Ativo', 'BT [HY300-BT] → Modo teste ativado');
+        showToast('Modo Bluetooth (HY300-BT) ativado');
+        closeModal();
+      }
+
+      function disconnectBluetooth() {
+        try {
+          if (state.btDevice && state.btDevice.gatt && state.btDevice.gatt.connected) {
+            state.btDevice.gatt.disconnect();
+          }
+        } catch (e) {}
+        state.btDevice = null;
+        state.btDeviceName = '';
+        state.btSimulated = false;
+        state.connMode = 'ip';
+        updateBluetoothUI();
+        renderScreen();
+        showToast('Bluetooth desconectado — voltando para IP Wi-Fi');
+      }
+
+      // ---------- Modal & Profiles ----------
+      function renderProfiles() {
+        const list = document.getElementById('savedProfilesList');
+        list.innerHTML = state.profiles.map(p => {
+          const active = state.connMode === 'ip' && p.id === state.activeProfileId;
+          return `
+            <div class="flex items-center justify-between rounded-xl border ${active ? 'border-indigo-500/70 bg-indigo-500/10' : 'border-slate-800 bg-slate-950/70'} px-3 py-2">
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-white truncate">${escapeHtml(p.name)}</div>
+                <div class="text-[11px] font-mono text-slate-400">${escapeHtml(p.ip)}:${escapeHtml(p.port)} · ${escapeHtml(p.protocol || 'HTTP')}</div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button type="button" data-select-profile="${p.id}"
+                  class="rounded-lg px-2.5 py-1 text-[11px] font-medium ${active ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'} transition">
+                  ${active ? 'Ativo' : 'Usar IP'}
+                </button>
+                ${state.profiles.length > 1 ? `<button type="button" data-delete-profile="${p.id}" class="rounded-lg p-1 text-slate-500 hover:text-rose-400 transition" title="Remover"><i data-lucide="trash-2" class="h-3.5 w-3.5"></i></button>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        list.querySelectorAll('[data-select-profile]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            state.activeProfileId = btn.dataset.selectProfile;
+            state.connMode = 'ip';
+            renderProfiles();
+            updateBluetoothUI();
+            renderScreen();
+            showToast('Perfil IP ativado');
+          });
+        });
+        list.querySelectorAll('[data-delete-profile]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const id = btn.dataset.deleteProfile;
+            state.profiles = state.profiles.filter(p => p.id !== id);
+            if (state.activeProfileId === id) state.activeProfileId = state.profiles[0].id;
+            saveProfiles();
+            renderProfiles();
+            renderScreen();
+          });
+        });
+
+        if (window.lucide) lucide.createIcons();
+      }
+
+      function openModal(initialTab) {
+        const prof = getActiveProfile();
+        document.getElementById('inputProfileName').value = prof.name;
+        document.getElementById('inputProfileIp').value = prof.ip;
+        document.getElementById('inputProfilePort').value = prof.port;
+        document.getElementById('inputProfileProtocol').value = prof.protocol || 'TranScreen / HTTP';
+        renderProfiles();
+        updateBluetoothUI();
+        switchConnTab(initialTab || (state.connMode === 'bluetooth' ? 'bluetooth' : 'ip'));
+        document.getElementById('connectModal').classList.remove('hidden');
+      }
+
+      function closeModal() {
+        document.getElementById('connectModal').classList.add('hidden');
+      }
+
+      // ---------- Event Listeners ----------
+      document.querySelectorAll('[data-cmd]').forEach(btn => {
+        btn.addEventListener('click', () => executeCommand(btn.dataset.cmd));
+      });
+
+      document.querySelectorAll('.mode-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+
+      document.querySelectorAll('.conn-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchConnTab(btn.dataset.connTab));
+      });
+
+      document.querySelectorAll('.app-launch-btn').forEach(btn => {
+        btn.addEventListener('click', () => launchApp(btn.dataset.launch));
+      });
+
+      document.getElementById('keyboardForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const input = document.getElementById('remoteTextInput');
+        sendRemoteText(input.value);
+        input.value = '';
+      });
+
+      document.getElementById('btnSendBackspace').addEventListener('click', () => executeCommand('DEL'));
+
+      document.getElementById('btnClearSearch').addEventListener('click', () => {
+        state.searchText = '';
+        document.getElementById('remoteTextInput').value = '';
+        renderScreen();
+        showToast('Campo de busca limpo');
+      });
+
+      document.querySelectorAll('.quick-text-btn').forEach(btn => {
+        btn.addEventListener('click', () => sendRemoteText(btn.dataset.quicktext));
+      });
+
+      document.getElementById('btnToggleSound').addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        const icon = document.getElementById('iconSound');
+        icon.setAttribute('data-lucide', state.soundEnabled ? 'volume-2' : 'volume-x');
+        if (window.lucide) lucide.createIcons();
+        showToast(state.soundEnabled ? 'Som dos botões ativado' : 'Som dos botões silenciado');
+      });
+
+      document.getElementById('btnOpenConnect').addEventListener('click', () => openModal('ip'));
+      document.getElementById('btnQuickBt').addEventListener('click', () => openModal('bluetooth'));
+      document.getElementById('btnOpenBridgeLink').addEventListener('click', () => openModal('ip'));
+      document.getElementById('btnCloseModal').addEventListener('click', closeModal);
+      document.getElementById('connectModal').addEventListener('click', (e) => {
+        if (e.target.id === 'connectModal') closeModal();
+      });
+
+      document.getElementById('inputProfileProtocol').addEventListener('change', (e) => {
+        const val = e.target.value;
+        const portInput = document.getElementById('inputProfilePort');
+        if (val.includes('Android TV')) portInput.value = '6466';
+        else if (val.includes('EShare')) portInput.value = '8000';
+        else portInput.value = '8080';
+      });
+
+      document.getElementById('profileForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('inputProfileName').value.trim() || 'HY300';
+        const ip = document.getElementById('inputProfileIp').value.trim() || '192.168.1.50';
+        const port = document.getElementById('inputProfilePort').value.trim() || '8080';
+        const protocol = document.getElementById('inputProfileProtocol').value || 'TranScreen / HTTP';
+        const existing = state.profiles.find(p => p.ip === ip && p.port === port);
+        if (existing) {
+          existing.name = name;
+          existing.protocol = protocol;
+          state.activeProfileId = existing.id;
+        } else {
+          const newId = 'prof-' + Date.now();
+          state.profiles.unshift({ id: newId, name, ip, port, protocol });
+          state.activeProfileId = newId;
+        }
+        state.connMode = 'ip';
+        saveProfiles();
+        renderProfiles();
+        updateBluetoothUI();
+        renderScreen();
+        addCommandLog('Perfil IP Ativo', `IP ${ip}:${port} (${protocol}) → Configurado`);
+        showToast(`Conectado ao perfil IP ${ip}:${port}`);
+        closeModal();
+      });
+
+      document.getElementById('btnScanBluetooth').addEventListener('click', scanWebBluetooth);
+      document.getElementById('btnSimulateBt').addEventListener('click', activateSimulatedBluetooth);
+      document.getElementById('btnDisconnectBt').addEventListener('click', disconnectBluetooth);
+
+      document.getElementById('btnCopyLastCmd').addEventListener('click', () => {
+        if (state.logs.length === 0) {
+          showToast('Nenhum comando registrado ainda.');
+          return;
+        }
+        copyText(state.logs[0].cmd, 'Último pacote copiado!');
+      });
+
+      document.getElementById('btnClearLog').addEventListener('click', () => {
+        state.logs = [];
+        renderCommandLog();
+      });
+
+      // Physical Keyboard Shortcuts
+      document.addEventListener('keydown', (e) => {
+        const tag = (e.target && e.target.tagName) || '';
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+        const modalOpen = !document.getElementById('connectModal').classList.contains('hidden');
+        if (modalOpen) {
+          if (e.key === 'Escape') closeModal();
+          return;
+        }
+        const map = {
+          ArrowUp: 'UP',
+          ArrowDown: 'DOWN',
+          ArrowLeft: 'LEFT',
+          ArrowRight: 'RIGHT',
+          Enter: 'OK',
+          Escape: 'BACK',
+          Backspace: 'BACK',
+          '+': 'VOL_UP',
+          '=': 'VOL_UP',
+          '-': 'VOL_DOWN',
+          m: 'MUTE',
+          M: 'MUTE',
+          h: 'HOME',
+          H: 'HOME',
+          p: 'POWER',
+          P: 'POWER'
+        };
+        if (map[e.key]) {
+          e.preventDefault();
+          executeCommand(map[e.key]);
+        }
+      });
+
+      // Live Clock
+      function updateClock() {
+        const now = new Date();
+        document.getElementById('screenClock').textContent = now.toTimeString().slice(0, 5);
+      }
+      updateClock();
+      setInterval(updateClock, 15000);
+
+      // Initial Render
+      renderScreen();
+      renderCommandLog();
+    })();
+  </script>
+</body>
+</html>
